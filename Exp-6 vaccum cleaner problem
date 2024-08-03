@@ -1,52 +1,59 @@
-class VacuumCleaner:
-    def _init_(self, environment, initial_position):
-        self.environment = environment
-        self.position = initial_position
-        self.cleaning_log = []
+from collections import deque
 
-    def sense(self):
-        return self.environment[self.position]
+# Define the possible movements: up, down, left, right
+movements = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-    def actuate(self, action):
-        if action == "SUCK":
-            self.environment[self.position] = "Clean"
-            self.cleaning_log.append(f"Cleaned at position {self.position}")
-        elif action == "LEFT":
-            if self.position > 0:
-                self.position -= 1
-            self.cleaning_log.append(f"Moved LEFT to position {self.position}")
-        elif action == "RIGHT":
-            if self.position < len(self.environment) - 1:
-                self.position += 1
-            self.cleaning_log.append(f"Moved RIGHT to position {self.position}")
+def is_valid_move(x, y, grid):
+    rows, cols = len(grid), len(grid[0])
+    return 0 <= x < rows and 0 <= y < cols and grid[x][y] != '#'
 
-    def decide_action(self):
-        if self.sense() == "Dirty":
-            return "SUCK"
-        elif self.position == 0:
-            return "RIGHT"
-        else:
-            return "LEFT"
+def bfs_vacuum_cleaner(start, grid):
+    rows, cols = len(grid), len(grid[0])
+    queue = deque([(start, 0)])
+    visited = set()
+    visited.add(start)
 
-    def clean(self, steps):
-        for _ in range(steps):
-            action = self.decide_action()
-            self.actuate(action)
+    while queue:
+        (x, y), steps = queue.popleft()
 
-# Example environment: A list with "Dirty" and "Clean" states
-environment = ["Dirty", "Dirty", "Clean", "Dirty", "Clean"]
+        # If we find a dirty spot, clean it
+        if grid[x][y] == 'D':
+            grid[x][y] = 'C'
+            print(f"Cleaned: ({x}, {y}) in {steps} steps")
 
-# Initial position of the vacuum cleaner
-initial_position = 0
+        # Check if all spots are cleaned
+        if all(grid[i][j] != 'D' for i in range(rows) for j in range(cols)):
+            print("All spots are cleaned")
+            return steps
 
-# Create a vacuum cleaner agent
-vacuum = VacuumCleaner(environment, initial_position)
+        # Explore the next possible moves
+        for dx, dy in movements:
+            nx, ny = x + dx, y + dy
+            if is_valid_move(nx, ny, grid) and (nx, ny) not in visited:
+                visited.add((nx, ny))
+                queue.append(((nx, ny), steps + 1))
 
-# Clean the environment for a specified number of steps
-vacuum.clean(10)
+    print("Some spots could not be cleaned")
+    return -1
 
-# Print the environment and cleaning log
-print("Final Environment State:", vacuum.environment)
-print("Cleaning Log:")
-for log in vacuum.cleaning_log:
-    print(log)
+def print_grid(grid):
+    for row in grid:
+        print(" ".join(row))
+    print()
+
+# Example usage
+grid = [
+    ['D', 'D', 'D'],
+    ['D', '#', 'D'],
+    ['D', 'D', 'D']
+]
+
+start = (1, 0)  # Starting position of the vacuum cleaner
+print("Initial grid:")
+print_grid(grid)
+
+steps = bfs_vacuum_cleaner(start, grid)
+
+print("\nFinal grid:")
+print_grid(grid)
+print(f"Total steps taken: {steps}")
