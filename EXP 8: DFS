@@ -1,33 +1,28 @@
-from collections import defaultdict
+from collections import deque
+def dfs(graph, start_node):
+    visited = set()
+    stack = [start_node]
 
+    while stack:
+        node = stack.pop()
+        if node not in visited:
+            print(node, end=" ")
+            visited.add(node)
 
-class Graph:
-    def __init__(self):
-        self.graph = defaultdict(list)
+            # Add neighbors to the stack in reverse order to maintain the same order as the BFS example
+            for neighbor in reversed(graph[node]):
+                if neighbor not in visited:
+                    stack.append(neighbor)
 
-    def addEdge(self, u, v):
-        self.graph[u].append(v)
+# Example usage
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'D', 'E'],
+    'C': ['A', 'F'],
+    'D': ['B'],
+    'E': ['B', 'F'],
+    'F': ['C', 'E']
+}
 
-    def DFSUtil(self, v, visited):
-        visited.add(v)
-        print(v, end=' ')
-        for neighbour in self.graph[v]:
-            if neighbour not in visited:
-                self.DFSUtil(neighbour, visited)
-
-    def DFS(self, v):
-        visited = set()
-        self.DFSUtil(v, visited)
-
-
-if __name__ == "__main__":
-    g = Graph()
-    g.addEdge(0, 1)
-    g.addEdge(0, 2)
-    g.addEdge(1, 2)
-    g.addEdge(2, 0)
-    g.addEdge(2, 3)
-    g.addEdge(3, 3)
-    print("Following is Depth First Traversal (starting from vertex 2)")
-
-    g.DFS(2)
+print("DFS traversal starting from node 'A':")
+dfs(graph, 'A')
