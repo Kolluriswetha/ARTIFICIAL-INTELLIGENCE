@@ -1,18 +1,9 @@
-% Define predicate to solve Towers of Hanoi
-hanoi(N) :-
-    move(N, left, center, right).
-
-% Base case: Moving 0 discs requires no moves
-move(0, _, _, _) :- !.
-
-% Recursive case: Move N discs from A to C using B as auxiliary
-move(N, A, B, C) :-
+hanoi(0, _, _, _, []) :- !.
+hanoi(N, Source, Destination, Auxiliary, Moves) :-
     N > 0,
-    M is N - 1,
-    move(M, A, C, B),     % Move N-1 discs from A to B using C
-    move_disk(A, C),      % Move the Nth disc from A to C
-    move(M, B, A, C).     % Move N-1 discs from B to C using A
-
-% Helper predicate to print the move
-move_disk(From, To) :-
-    format('Move disk from ~w to ~w~n', [From, To]).
+    N1 is N - 1,
+    hanoi(N1, Source, Auxiliary, Destination, Moves1),
+    MoveN = move(Source, Destination),
+    hanoi(N1, Auxiliary, Destination, Source, Moves2),
+    append(Moves1, [MoveN|Moves2], Moves).
+% Move N disks from Peg A to Peg B using Peg C as auxiliary.
